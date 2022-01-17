@@ -6,6 +6,8 @@ import boto3
 # input('Please input Number of assets: ')
 # One frame 8246
 # 8145 small
+
+
 def get_input():
     key_f = input(
         """
@@ -26,13 +28,38 @@ def get_input():
     return key_f
 
 
+def add_to_ready_list():
+    if a != "b":
+        for k in for_download:
+            kk = k.split(".")
+            if kk[1] <= a[1] and kk[1] >= a[0]:
+                ready_list.append(k)
+
+
+def download():
+    if ready_list:
+        for obcject in ready_list:
+            obcject2 = obcject.split("/")
+            try:
+                my_bucket.download_file(obcject, obcject2[-1])
+            except:
+                my_bucket2.download_file(obcject, obcject2[-1])
+    else:
+        for obcject in for_download:
+            obcject2 = obcject.split("/")
+            try:
+                my_bucket.download_file(obcject, obcject2[-1])
+            except:
+                my_bucket2.download_file(obcject, obcject2[-1])
+
+
 a = get_input()
 # Ask for assets number
 filename = input("Please input NUMBER of assets: ")
 s3 = boto3.resource("s3")
 my_bucket = s3.Bucket("mpc-sharepipe-production-assets-storage")
 
-## Download assets using number
+# Download assets using number
 # Empty list to check if assets exists in S3 bucket
 for_download = []
 ready_list = []
@@ -41,20 +68,9 @@ for my_bucket_object in my_bucket.objects.all():
     if my_bucket_object.key.startswith(filename):
         for_download.append(my_bucket_object.key)
 
-if a != "b":
-    for k in for_download:
-        kk = k.split(".")
-        if kk[1] <= a[1] and kk[1] >= a[0]:
-            ready_list.append(k)
+add_to_ready_list()
 
-if ready_list:
-    for obcject in ready_list:
-        obcject2 = obcject.split("/")
-        my_bucket.download_file(obcject, obcject2[1])
-else:
-    for obcject in for_download:
-        obcject2 = obcject.split("/")
-        my_bucket.download_file(obcject, obcject2[1])
+download()
 
 # If for_download is empty return false and download for another s3 bucket
 if not for_download:
@@ -115,23 +131,17 @@ if not for_download:
     secend_word = [x for x in secend_two_words if input_split[l] in x]
     if not secend_word:
         secend_word.append(input_split[l])
-    for_download2 = []
-    ready_list2 = []
+
     for my_bucket_object in my_bucket2.objects.filter(
         Prefix=f"jobs/mpcAdvelements_1800417/{first_word[0]}/{secend_word[0]}/elements/"
     ):
         if filename in my_bucket_object.key:
-            for_download2.append(my_bucket_object.key)
-    if a != "b":
-        for k in for_download2:
-            kk = k.split(".")
-            if kk[1] <= a[1] and kk[1] >= a[0]:
-                ready_list2.append(k)
-    if ready_list2:
-        for obcject in ready_list2:
-            obcject2 = obcject.split("/")
-            my_bucket2.download_file(obcject, obcject2[-1])
-    else:
-        for obcject in for_download2:
-            obcject2 = obcject.split("/")
-            my_bucket2.download_file(obcject, obcject2[-1])
+            for_download.append(my_bucket_object.key)
+    add_to_ready_list()
+
+    download()
+print("Download Finish!!!")
+
+# first aws s3 cp --recursive S3Bucket name Local path
+
+# Aws cli command:   aws s3 sync S3Bucket name Local path
