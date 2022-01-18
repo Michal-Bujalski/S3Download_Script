@@ -29,7 +29,7 @@ def get_input():
 
 
 def add_to_ready_list():
-    if a != "b":
+    if a.lower() != "b":
         for k in for_download:
             kk = k.split(".")
             if kk[1] <= a[1] and kk[1] >= a[0]:
